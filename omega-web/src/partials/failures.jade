@@ -1,0 +1,45 @@
+.page-header
+  h2 Failures (beta)
+section.settings-group
+  .btn-toolbar
+    button.btn.btn-default(ng-click='refresh()')
+      span.glyphicon.glyphicon-refresh
+      = ' '
+      | Refresh
+    button.btn.btn-default(ng-click='clear()')
+      span.glyphicon.glyphicon-trash
+      = ' '
+      | Clear
+    label.checkbox
+      input(type='checkbox' ng-model='autoRefresh' ng-change='toggleAuto()')
+      span Auto-refresh
+  .form-group
+    input.form-control(type='text' ng-model='search' placeholder='Search')
+  table.table.table-striped
+    thead
+      tr
+        th Host
+        th Error
+        th First seen
+        th Last seen
+        th Hits
+        th Origin
+        th
+    tbody
+      tr(ng-repeat='f in failed | filter:search track by f.host')
+        td {{f.host}}
+        td {{f.lastError}}
+        td {{f.firstSeen | date:"short"}}
+        td {{f.lastSeen | date:"short"}}
+        td {{f.hits}}
+        td {{f.pageOrigins[0]}}
+        td
+          button.btn.btn-xs.btn-primary(ng-click='add(f.host)')
+            span.glyphicon.glyphicon-plus
+            = ' '
+            | Add to Proxy list
+          = ' '
+          button.btn.btn-xs.btn-default(ng-click='copy(f.host)')
+            span.glyphicon.glyphicon-copy
+            = ' '
+            | Copy host

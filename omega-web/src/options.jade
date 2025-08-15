@@ -37,6 +37,10 @@ html(lang='en' ng-controller='MasterCtrl' ng-csp)
             span.glyphicon.glyphicon-adjust
             = ' '
             | {{'options_theme' | tr}}
+          li(ui-sref-active='active'): a(ui-sref='failures')
+            span.glyphicon.glyphicon-exclamation-sign
+            = ' '
+            | Failures (beta)
           li.divider
           li.nav-header {{'options_navHeader_profiles' | tr}}
           li(ui-sref-active='active'): a(ui-sref='builtin')
