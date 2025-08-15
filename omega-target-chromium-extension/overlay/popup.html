@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Failures</title>
+  <link rel="stylesheet" href="./popup.css">
+</head>
+<body>
+  <h1>Failures</h1>
+  <div id="toolbar">
+    <button id="select-all">Select all</button>
+    <button id="clear-selection">Clear</button>
+    <input id="filter" type="text" placeholder="filter">
+  </div>
+  <ul id="failures"></ul>
+  <div id="manual">
+    <input id="manual-domain" type="text" placeholder="example.com">
+    <button id="manual-add">Add</button>
+  </div>
+  <button id="add-selected">Add selected to Proxy</button>
+  <div id="status"></div>
+  <script src="./popup.js"></script>
+</body>
+</html>
