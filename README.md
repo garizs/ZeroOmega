@@ -5,6 +5,14 @@ ZeroOmega, forked from SwitchyOmega compatible with manifest v3
 
 Manage and switch between multiple proxies quickly & easily.
 
+## Minimal Failure Catcher
+
+This fork can be built as a lightweight extension for the Orion browser that only records failed network requests and sends selected domains to a local service.
+
+1. Load the built extension in Orion and enable **Allow on all websites** in the extension details.
+2. The popup lists recent failing domains; use **Add selected to Proxy** to POST them to `http://127.0.0.1:9099/add-domain`.
+3. The local endpoint must accept `Content-Type: application/json` and allow cross-origin requests.
+
 [![Translation status](https://hosted.weblate.org/widgets/switchyomega/-/svg-badge.svg)](https://hosted.weblate.org/engage/switchyomega/?utm_source=widget)
 
 Chromium Extension

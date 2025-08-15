@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Proxy SwitchyOmega 3 (ZeroOmega)",
+  "name": "ZeroOmega Failure Catcher",
   "version": "3.4.3",
-  "description": "__MSG_manifest_app_description__",
+  "description": "Capture failing domains and send them to a local endpoint.",
   "icons": {
     "16": "img/icons/omega-action-16.png",
     "24": "img/icons/omega-action-24.png",
@@ -20,30 +20,18 @@
       "32": "img/icons/omega-action-32.png"
     },
     "default_title": "__MSG_manifest_icon_default_title__",
-    "default_popup": "popup-iframe.html"
+    "default_popup": "popup.html"
   },
   "background": {
-    "service_worker": "x-background.js",
-    "type": "module"
-  },
-  "minimum_chrome_version": "88",
-  "options_page": "options.html",
-  "options_ui": {
-    "page": "options.html",
-    "browser_style": false,
-    "open_in_tab": true
-  },
-  "commands": {
-    "_execute_action": { "suggested_key": { "default": "Alt+Shift+O" } }
+    "service_worker": "x-background.js"
   },
   "permissions": [
-    "proxy",
-    "tabs",
-    "alarms",
     "storage",
-    "unlimitedStorage",
     "webRequest",
-    "contextMenus"
+    "webRequestBlocking"
   ],
-  "host_permissions": ["<all_urls>", "http://127.0.0.1/*"]
+  "host_permissions": [
+    "<all_urls>",
+    "http://127.0.0.1/*"
+  ]
 }

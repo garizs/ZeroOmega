@@ -1,0 +1,36 @@
+body {
+  font-family: sans-serif;
+  min-width: 300px;
+  padding: 10px;
+}
+#toolbar {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+#failures {
+  list-style: none;
+  padding: 0;
+  max-height: 300px;
+  overflow-y: auto;
+}
+#failures li {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 4px;
+}
+#manual {
+  margin-top: 8px;
+  display: flex;
+  gap: 4px;
+}
+#add-selected {
+  margin-top: 8px;
+  width: 100%;
+}
+#status {
+  margin-top: 6px;
+  min-height: 1em;
+  font-size: 0.9em;
+}
