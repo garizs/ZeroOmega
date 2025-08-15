@@ -65,6 +65,10 @@ $httpProvider, $animateProvider, $compileProvider) ->
     ).state('theme',
       url: '/theme'
       templateUrl: 'partials/theme.html'
+    ).state('failures',
+      url: '/failures'
+      templateUrl: 'partials/failures.html'
+      controller: 'FailuresCtrl'
     ).state('profile',
       url: '/profile/*name'
       templateUrl: 'partials/profile.html'
