@@ -3,10 +3,6 @@ ZeroOmega, forked from SwitchyOmega compatible with manifest v3
 
 [Chrome Web Store](https://chromewebstore.google.com/detail/pfnededegaaopdmhkdmcofjmoldfiped)
 
-[Microsoft Edge Addons](https://microsoftedge.microsoft.com/addons/detail/zeroomegaproxy-switchy-/dmaldhchmoafliphkijbfhaomcgglmgd)
-
-[Firefox Addon](https://addons.mozilla.org/en-US/firefox/addon/zeroomega/)
-
 Manage and switch between multiple proxies quickly & easily.
 
 [![Translation status](https://hosted.weblate.org/widgets/switchyomega/-/svg-badge.svg)](https://hosted.weblate.org/engage/switchyomega/?utm_source=widget)
@@ -19,16 +15,6 @@ You can try it on [Chrome Web Store](https://chromewebstore.google.com/detail/pf
 or grab a packaged extension file (CRX) for offline installation on the [Releases page](https://github.com/zero-peak/ZeroOmega/releases).
 
 Please [report issues on the issue tracker](https://github.com/zero-peak/ZeroOmega/issues).
-
-Firefox Addon
-----------------------------
-
-There is also a WebExtension port, which allows installing in Firefox. Compatibility with Firefox has increased significantly recently.
-
-You can try it on [Mozilla Add-ons](https://addons.mozilla.org/en-US/firefox/addon/zeroomega/),
-or grab a packaged extension file (XPI) for offline installation on the [Releases page](https://github.com/zero-peak/ZeroOmega/releases).
-
-Please [report issues on the issue tracker](https://github.com/zero-peak/ZeroOmega/issues), browser-specific bugs are possible.
 
 Development status
 ------------------
@@ -72,7 +58,7 @@ target, such as background pages and extension manifests.
 
 For now, only one target has been implemented: The WebExtension target.
 This target allows the project to be used as a Chromium extension in most
-Chromium-based browsers and also as a Firefox Addon as mentioned above.
+Chromium-based browsers
 
 ## Translation
 
@@ -102,11 +88,11 @@ To build the project:
     # The modules are now working. We can build now:
     npm run build
     # After building, a "build" folder will be generated in omega-target-chromium-extension folder.
-    # The folder above can be loaded as an unpacked extension in Chromium now.
+    # The folder above can be loaded as an unpacked extension in Chromium or Orion now.
     npm run release
     # After release, a "dist" folder will be generated in root folder.
     cd ../dist # Return to generated folder.
-    # The chromium-release.zip and firefox-release.zip are the package files corresponding to chromium and firefox respectively.
+    # The chromium-release.zip is the package file.
 
 To enable `grunt watch`, run `grunt watch` once in the `omega-build` directory.
 This will effectively run `grunt watch` in every module in this project.
