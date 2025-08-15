@@ -1,0 +1,21 @@
+{
+  "manifest_version": 3,
+  "name": "ZeroOmega Failure Catcher",
+  "version": "0.1.0",
+  "description": "Captures failing domains and sends them to a local service.",
+  "permissions": [
+    "storage",
+    "webRequest",
+    "webRequestBlocking"
+  ],
+  "host_permissions": [
+    "<all_urls>",
+    "http://127.0.0.1/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html"
+  }
+}

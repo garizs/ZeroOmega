@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: sans-serif; width: 300px; }
+    #status { margin-top: 8px; font-size: 0.9em; }
+    ul { list-style: none; padding: 0; }
+    li { display: flex; align-items: center; }
+    li span { flex: 1; }
+  </style>
+</head>
+<body>
+  <h3>Failures</h3>
+  <input type="text" id="filter" placeholder="Filter">
+  <button id="refresh">Refresh</button>
+  <button id="selectAll">Select all</button>
+  <button id="clear">Clear</button>
+  <ul id="list"></ul>
+  <input type="text" id="manualDomain" placeholder="example.com">
+  <button id="addManual">Add domain</button>
+  <button id="addSelected">Add selected to Proxy</button>
+  <div id="status"></div>
+  <script src="popup.js"></script>
+</body>
+</html>
