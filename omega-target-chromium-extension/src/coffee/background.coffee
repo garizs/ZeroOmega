@@ -6,6 +6,10 @@ OmegaTargetCurrent.Log = Object.create(OmegaTargetCurrent.Log)
 Log = OmegaTargetCurrent.Log
 
 
+FailedHosts = require('../module/failed_hosts')
+failedHosts = new FailedHosts()
+
+
 BUILTINSYNCKEY = 'zeroOmegaSync'
 
 globalThis.isBrowserRestart = false
@@ -447,7 +451,18 @@ zeroBackground = (zeroStorage, opts) ->
         chrome.storage.local.clear()
       ])
   chrome.runtime.onMessage.addListener (request, sender, respond) ->
-    return unless request and request.method
+    if request?.type == 'GET_FAILED_HOSTS'
+      failedHosts.list().then (list) -> respond(list)
+      return true
+    if request?.type == 'CLEAR_FAILED_HOSTS'
+      failedHosts.clear().then -> respond(ok: true)
+      return true
+    if request?.type == 'SEND_HOST_TO_LOCAL'
+      failedHosts.send(request.host).then (res) -> respond(res)
+      return true
+
+    return unless request?.method
+
     options.ready.then ->
       if request.method == 'resetAllOptions'
         target = globalThis
