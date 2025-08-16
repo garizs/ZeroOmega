@@ -2,7 +2,8 @@ const LOG_PREFIX = '[popup]';
 let failedHosts = [];
 
 function log(...args) {
-  console.log(LOG_PREFIX, ...args);
+  const ts = new Date().toISOString();
+  console.log(ts, LOG_PREFIX, ...args);
 }
 
 function setStatus(msg, isError=false) {
@@ -52,17 +53,21 @@ document.getElementById('selectAll').addEventListener('click', () => {
   document.querySelectorAll('#list input[type=checkbox]').forEach(cb => cb.checked = true);
 });
 
-document.getElementById('clear').addEventListener('click', () => {
-  log('clear clicked');
+document.getElementById('clearAll').addEventListener('click', () => {
+  const count = failedHosts.length;
+  log('clear all clicked', {count});
+  failedHosts = [];
+  chrome.storage.session.set({failedHosts: []});
+  renderList();
   chrome.runtime.sendMessage({type: 'CLEAR_FAILED_HOSTS'}, resp => {
     if (chrome.runtime.lastError) {
       log('CLEAR_FAILED_HOSTS error', chrome.runtime.lastError);
       setStatus('Error clearing', true);
       return;
     }
-    log('cleared', resp);
-    setStatus('Cleared ' + resp.countCleared);
-    requestHosts();
+    log('CLEAR_FAILED_HOSTS response', resp);
+    setStatus(resp.ok ? 'Cleared ' + resp.countCleared : 'Failed', !resp.ok);
+    log('state after clear', {remaining: failedHosts.length});
   });
 });
 
@@ -78,7 +83,27 @@ document.getElementById('addSelected').addEventListener('click', () => {
       return;
     }
     log('ADD_TO_PROXY response', resp);
-    setStatus(resp.ok ? 'Sent (' + resp.status + ')' : 'Failed', !resp.ok);
+    const added = resp.added || [];
+    const failed = resp.failed || [];
+    if (added.length) {
+      log('pruning added hosts', added);
+      failedHosts = failedHosts.filter(h => !added.includes(h.host));
+      chrome.storage.session.set({failedHosts});
+      renderList();
+      chrome.runtime.sendMessage({type: 'PRUNE_FAILED_HOSTS', hosts: added}, r => {
+        if (chrome.runtime.lastError) log('PRUNE_FAILED_HOSTS error', chrome.runtime.lastError);
+        else log('PRUNE_FAILED_HOSTS response', r);
+      });
+    }
+    if (failed.length) {
+      log('marking failed hosts', failed);
+      failedHosts = failedHosts.map(h => failed.includes(h.host) ? {...h, error: 'add-failed'} : h);
+      chrome.storage.session.set({failedHosts});
+      renderList();
+    }
+    const ok = resp.ok && !failed.length;
+    const msg = ok ? 'Sent (' + added.length + ')' : 'Partial: ' + added.length + ' ok, ' + failed.length + ' failed';
+    setStatus(msg, !ok);
   });
 });
 
