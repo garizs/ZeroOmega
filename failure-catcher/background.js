@@ -9,7 +9,8 @@ let failedHosts = [];
 const debounceMap = new Map();
 
 function log(...args) {
-  console.log(LOG_PREFIX, ...args);
+  const ts = new Date().toISOString();
+  console.log(ts, LOG_PREFIX, ...args);
 }
 
 function normalizeHost(url) {
@@ -89,9 +90,20 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     sendResponse({hosts: failedHosts});
   } else if (msg && msg.type === 'CLEAR_FAILED_HOSTS') {
     const count = failedHosts.length;
+    log('CLEAR_FAILED_HOSTS request', {count});
     failedHosts = [];
     saveToStorage();
+    log('CLEAR_FAILED_HOSTS done', {remaining: failedHosts.length});
     sendResponse({ok: true, countCleared: count});
+  } else if (msg && msg.type === 'PRUNE_FAILED_HOSTS') {
+    const hosts = (msg.hosts || []).map(h => normalizeHost('http://' + h)).filter(Boolean);
+    log('PRUNE_FAILED_HOSTS request', hosts);
+    const before = failedHosts.length;
+    failedHosts = failedHosts.filter(h => !hosts.includes(h.host));
+    const pruned = before - failedHosts.length;
+    saveToStorage();
+    log('PRUNE_FAILED_HOSTS done', {requested: hosts.length, pruned, remaining: failedHosts.length});
+    sendResponse({ok: true, pruned});
   } else if (msg && msg.type === 'ADD_TO_PROXY') {
     const domains = msg.hosts || [];
     const payload = {domains};
@@ -101,12 +113,20 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify(payload)
-    }).then(res => {
-      log('POST success', res.status);
-      sendResponse({ok: true, status: res.status});
+    }).then(async res => {
+      let data = {};
+      try {
+        data = await res.json();
+      } catch (e) {
+        // ignore json parse errors
+      }
+      const added = data.added || (res.ok ? domains : []);
+      const failed = data.failed || (res.ok ? [] : domains);
+      log('POST success', {status: res.status, added, failed});
+      sendResponse({ok: res.ok, status: res.status, added, failed});
     }).catch(err => {
       log('POST error', err);
-      sendResponse({ok: false, error: String(err)});
+      sendResponse({ok: false, error: String(err), added: [], failed: domains});
     });
     return true;
   }
