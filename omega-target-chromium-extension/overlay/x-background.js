@@ -4,12 +4,20 @@ const IGNORE = ['sentry.io', 'googletagmanager.com', 'doubleclick.net', 'faceboo
 const recent = new Map(); // debounce map
 let buffer = [];
 
+// Startup banner with diagnostics
+console.log('=== ZeroOmega Failure Catcher Background Worker ===');
+console.log('READY:', new Date().toISOString());
+console.log('User-Agent:', navigator.userAgent);
+
 // heartbeat to keep worker alive for logs
-setInterval(() => chrome.runtime.getPlatformInfo(() => {}), 25 * 1000);
-console.log('failure catcher worker started');
+setInterval(() => {
+  chrome.runtime.getPlatformInfo(() => { });
+  console.log('SW alive - heartbeat');
+}, 30000);
 
 chrome.storage.session.get({ [KEY]: [] }, res => {
   buffer = res[KEY] || [];
+  console.log('Loaded from storage:', buffer.length, 'items');
 });
 
 function normalize(url) {
@@ -40,8 +48,9 @@ function save() {
   chrome.storage.session.set({ [KEY]: buffer }, () => {
     try {
       chrome.runtime.sendMessage({ type: 'failed_hosts_updated' });
+      console.log('Storage updated, broadcast sent');
     } catch (e) {
-      // no listeners
+      console.log('Broadcast failed:', e.message);
     }
   });
 }
@@ -64,34 +73,89 @@ function record(host, error) {
 
 function handleError(details) {
   const host = normalize(details.url);
-  if (!host) return;
+  if (!host) {
+    console.log('IGNORED network error - invalid host:', details.url);
+    return;
+  }
   const err = details.error || 'error';
-  if (debounced(host, err)) return;
+  if (debounced(host, err)) {
+    console.log('IGNORED network error - debounced:', host, err);
+    return;
+  }
+  console.log('KEPT network error:', host, err);
   record(host, err);
 }
 
 function handleCompleted(details) {
   if (!details.statusCode || details.statusCode < 400) return;
   const host = normalize(details.url);
-  if (!host) return;
+  if (!host) {
+    console.log('IGNORED HTTP error - invalid host:', details.url);
+    return;
+  }
   const err = String(details.statusCode);
-  if (debounced(host, err)) return;
+  if (debounced(host, err)) {
+    console.log('IGNORED HTTP error - debounced:', host, err);
+    return;
+  }
+  console.log('KEPT HTTP error:', host, err);
   record(host, err);
 }
 
+// Register listeners
 chrome.webRequest.onErrorOccurred.addListener(handleError, { urls: ['<all_urls>'] });
 chrome.webRequest.onCompleted.addListener(handleCompleted, { urls: ['<all_urls>'] });
+console.log('WebRequest listeners registered');
 
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+  console.log('Message received:', msg.type);
+
   if (msg && msg.type === 'GET_FAILED_HOSTS') {
     chrome.storage.session.get({ [KEY]: [] }, res => {
       const list = (res[KEY] || []).slice().sort((a, b) => b.lastSeen - a.lastSeen);
+      console.log('GET_FAILED_HOSTS: returning', list.length, 'items');
       sendResponse(list);
     });
     return true;
   }
+
+  if (msg && msg.type === 'CLEAR_FAILED_HOSTS') {
+    const countCleared = buffer.length;
+    buffer = [];
+    save();
+    console.log('CLEAR_FAILED_HOSTS: cleared', countCleared, 'items');
+    sendResponse({ ok: true, countCleared });
+    return true;
+  }
+
+  if (msg && msg.type === 'PRUNE_FAILED_HOSTS') {
+    const hosts = msg.hosts || [];
+    let pruned = 0;
+
+    hosts.forEach(host => {
+      const normalizedHost = normalize(host);
+      if (normalizedHost) {
+        const idx = buffer.findIndex(r => r.host === normalizedHost);
+        if (idx >= 0) {
+          buffer.splice(idx, 1);
+          pruned++;
+        }
+      }
+    });
+
+    if (pruned > 0) {
+      save();
+      console.log('PRUNE_FAILED_HOSTS: pruned', pruned, 'hosts');
+    }
+
+    sendResponse({ ok: true, pruned });
+    return true;
+  }
+
   if (msg && msg.type === 'ADD_TO_PROXY') {
     const domains = Array.isArray(msg.domains) ? msg.domains : [];
+    console.log('ADD_TO_PROXY: processing', domains.length, 'domains');
+
     Promise.all(domains.map(domain => {
       return fetch('http://127.0.0.1:9099/add-domain', {
         method: 'POST',
@@ -99,7 +163,12 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         body: JSON.stringify({ domain })
       }).then(res => ({ domain, ok: res.ok, status: res.status }))
         .catch(err => ({ domain, ok: false, error: err.message }));
-    })).then(results => sendResponse(results));
+    })).then(results => {
+      const successful = results.filter(r => r.ok).length;
+      const failed = results.length - successful;
+      console.log('ADD_TO_PROXY: success', successful, 'failed', failed);
+      sendResponse(results);
+    });
     return true;
   }
 });
